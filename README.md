@@ -1,21 +1,23 @@
 # Jmeter Metrics Report
 
-Creates awesome HTML (dashboard view) report by parsing Jmeter *.jtl file
+Creates awesome HTML (dashboard view) report by parsing Jmeter *.jtl file (Python + Pandas + Beautifulsoup)
 
 [![PyPI version](https://badge.fury.io/py/jmeter-metrics.svg)](https://badge.fury.io/py/jmeter-metrics)
 [![Downloads](https://pepy.tech/badge/jmeter-metrics)](https://pepy.tech/project/jmeter-metrics)
-[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
-[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://GitHub.com/Naereen/StrapDown.js/graphs/commit-activity)
-[![Open Source Love png1](https://badges.frapsoft.com/os/v1/open-source.png?v=103)](https://github.com/ellerbrock/open-source-badges/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)]()
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)]()
+[![Open Source Love png1](https://badges.frapsoft.com/os/v1/open-source.png?v=103)]()
+[![HitCount](http://hits.dwyl.io/adiralashiva8/jmeter-metrics.svg)](http://hits.dwyl.io/adiralashiva8/jmeter-metrics)
 
 ---
+
  - __Sample Report__ [link](https://jmetermetrics.netlify.com/)
 
 ---
 
 #### How it Works:
 
-1. Read *.jtl file (pandas)
+1. Read *.jtl file (using pandas)
 
 2. Get 'label', 'success', 'elapsed', 'failureMessage' values
 
@@ -25,11 +27,13 @@ Creates awesome HTML (dashboard view) report by parsing Jmeter *.jtl file
 
 #### How to use in project:
 
+> Install python
+
 1. Install jmetermetrics
 
     > Case 1: Using pip
     ```
-    pip install jmeter-metrics==`1.0.1`
+    pip install jmeter-metrics==1.0.1
     ```
 
     > Case 2: Using setup.py (clone project and run command within root)
