@@ -1,6 +1,6 @@
 # Jmeter Metrics Report
 
-Creates awesome HTML (dashboard view) report by parsing Jmeter *.jtl file (Python + Pandas + Beautifulsoup)
+Creates awesome HTML (dashboard view) report by parsing Jmeter *.jtl or *.csv file (Python + Pandas + Beautifulsoup)
 
 [![PyPI version](https://badge.fury.io/py/jmeter-metrics.svg)](https://badge.fury.io/py/jmeter-metrics)
 [![Downloads](https://pepy.tech/badge/jmeter-metrics)](https://pepy.tech/project/jmeter-metrics)
@@ -17,7 +17,7 @@ Creates awesome HTML (dashboard view) report by parsing Jmeter *.jtl file (Pytho
 
 #### How it Works:
 
-1. Read *.jtl file (using pandas)
+1. Read *.jtl or *.csv file (using pandas)
 
 2. Get 'label', 'success', 'elapsed', 'failureMessage' values
 
@@ -70,6 +70,9 @@ Creates awesome HTML (dashboard view) report by parsing Jmeter *.jtl file (Pytho
     ```
     jmetermetrics -M regression_metrics.html
     ```
+
+   > Note: jmeter-metrics support *.csv file as well
+
 ---
 
 #### Customize Report
