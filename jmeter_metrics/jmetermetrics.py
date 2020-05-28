@@ -19,6 +19,24 @@ def generate_report(opts):
     # input directory
     path = os.path.abspath(os.path.expanduser(opts.path))
 
+    # files
+    output_names = []
+    if ( opts.output == "*.jtl" or opts.output == "*.csv"):
+        for item in os.listdir(path):
+            if os.path.isfile(item) and item.endswith('.jtl'):
+                output_names.append(item)
+            elif os.path.isfile(item) and item.endswith('.csv'):
+                output_names.append(item)
+    else:
+        for curr_name in opts.output.split(","):
+            curr_path = os.path.join(path, curr_name)
+            output_names.append(curr_path)
+
+    required_files = list(output_names)
+    missing_files = [filename for filename in required_files if not os.path.exists(filename)]
+    if missing_files:
+        exit("Jmeter results file is missing: {}".format(", ".join(missing_files)))
+
     mt_time = datetime.now().strftime('%Y%m%d-%H%M%S')
 
     # Output result file location
@@ -29,8 +47,8 @@ def generate_report(opts):
     result_file = os.path.join(path, result_file_name)
 
     # Read result.jtl file
-    dataset = pd.read_csv(opts.output)
-    df = pd.DataFrame(dataset)
+    df_from_each_file = (pd.read_csv(f) for f in output_names)
+    df = pd.concat(df_from_each_file, ignore_index=True)
 
     pd.set_option('display.max_rows', None)
     pd.set_option('display.max_columns', None)
@@ -40,15 +58,15 @@ def generate_report(opts):
     try:
         df[['label', 'success', 'elapsed', 'failureMessage']]
     except Exception:
-        exit("Error: Missing one of the column: 'label' or 'success' or 'elapsed' or 'failureMessage' in *.jtl file")
+        exit("Error: Missing one of the column: 'label' or 'success' or 'elapsed' or 'failureMessage' in file")
 
     total_count = df[['success']].count().values
 
     if total_count == 0:
-        exit("Error: *.jtl file is invalid, Please retry with valid file")
+        exit("Error: File is invalid, Please retry with valid file")
 
     # actual flow
-    logging.info("Converting .jtl to .html file. This may take few minutes...")
+    logging.info("Converting to .html file. This may take few minutes...")
 
     head_content = """
     <!DOCTYPE doctype html>
@@ -163,7 +181,7 @@ def generate_report(opts):
         </style>
     </head>
     """
-    if opts.ignorekeywords == "True":
+    if opts.ignoretableresult == "True":
         hide_keyword = "hidden"
     else:
         hide_keyword = ""
@@ -417,7 +435,7 @@ def generate_report(opts):
     table.insert(11, test_tbody)
 
     # GET TEST METRICS
-    if opts.ignorekeywords == "True":
+    if opts.ignoretableresult == "True":
         pass
     else:
         table_columns = df[['label', 'success', 'elapsed', 'failureMessage']]
@@ -511,10 +529,10 @@ def generate_report(opts):
         var fileTitle;
         switch(tabname) {
             case "#sm":
-                fileTitle = "SuiteMetrics";
+                fileTitle = "SummaryReport";
                 break;
             case "#tm":
-                fileTitle =  "TestMetrics";
+                fileTitle =  "TableReport";
                 break;
             default:
                 fileTitle =  "metrics";

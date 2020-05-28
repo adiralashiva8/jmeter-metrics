@@ -6,7 +6,7 @@ exec(compile(open(filename, 'rb').read(), filename, 'exec'))
 setup(name='jmeter-metrics',
       version=__version__,
       description='Custom dashboard report for Jmeter',
-      long_description='Dashboard view of jmeter results created by parsing *.jtl file',
+      long_description='Dashboard view of jmeter results created by parsing .jtl or .csv file',
       classifiers=[
           'Programming Language :: Python',
           'Topic :: Software Development :: Testing',

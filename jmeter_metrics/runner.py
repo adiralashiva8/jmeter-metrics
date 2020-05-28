@@ -38,14 +38,14 @@ def parse_options():
         '-O', '--output',
         dest='output',
         default="result.jtl",
-        help="Name of *.jtl file"
+        help="Name of *.jtl or *.csv file"
     )
 
     general.add_argument(
-        '-k', '--ignorekeywords',
-        dest='ignorekeywords',
+        '-K', '--ignoretableresult',
+        dest='ignoretableresult',
         default="False",
-        help="Ignore keywords in metrics report"
+        help="Ignore table report in metrics report"
     )
 
     args = parser.parse_args()

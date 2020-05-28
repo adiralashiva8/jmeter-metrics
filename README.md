@@ -33,7 +33,7 @@ Creates awesome HTML (dashboard view) report by parsing Jmeter *.jtl or *.csv fi
 
     > Case 1: Using pip
     ```
-    pip install jmeter-metrics==1.0.1
+    pip install jmeter-metrics==1.0.2
     ```
 
     > Case 2: Using setup.py (clone project and run command within root)
@@ -73,6 +73,27 @@ Creates awesome HTML (dashboard view) report by parsing Jmeter *.jtl or *.csv fi
 
    > Note: jmeter-metrics support *.csv file as well
 
+---
+
+### Exclude Table Results
+
+ - From v1.0.2 users can exclude table results in metrics report using --ignoretableresult or -K command
+
+    ```
+    jmetermetrics -K True
+    ```
+
+    > By default `--ignoretableresult` is `False`
+
+---
+
+### Multiple cdv/jtl support
+
+ - From v1.0.2 metrics report support parsing multiple csv/jtl files
+
+    ```
+    jmetermetrics -0 "result.jtl,result1.csv,result2.jtl,result3.csv"
+    ```
 ---
 
 #### Customize Report
