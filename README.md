@@ -66,13 +66,16 @@ Creates awesome HTML (dashboard view) report by parsing Jmeter *.jtl or *.csv fi
 
 3. Jmeter Metrics Report __metrics-timestamp.html__ file will be created in current folder | `-inputpath` if specified
 
-    Command to customize name of result file
+    > Note: jmeter-metrics support *.csv file as well
+
+---
+
+### Custom Report Name
+
+ - Command to customize name of result file
     ```
     jmetermetrics -M regression_metrics.html
     ```
-
-   > Note: jmeter-metrics support *.csv file as well
-
 ---
 
 ### Exclude Table Results
@@ -87,7 +90,7 @@ Creates awesome HTML (dashboard view) report by parsing Jmeter *.jtl or *.csv fi
 
 ---
 
-### Multiple cdv/jtl support
+### Multiple csv/jtl support
 
  - From v1.0.2 metrics report support parsing multiple csv/jtl files
 
