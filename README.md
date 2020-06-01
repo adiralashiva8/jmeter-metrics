@@ -19,7 +19,7 @@ Creates awesome HTML (dashboard view) report by parsing Jmeter *.jtl or *.csv fi
 
 1. Read *.jtl or *.csv file (using pandas)
 
-2. Get 'label', 'success', 'elapsed', 'failureMessage' values
+2. Get 'label', 'success', 'elapsed', 'failureMessage', 'responseCode', 'threadName' values
 
 3. Convert data to html report using Beautifulsoup
 
@@ -33,7 +33,7 @@ Creates awesome HTML (dashboard view) report by parsing Jmeter *.jtl or *.csv fi
 
     > Case 1: Using pip
     ```
-    pip install jmeter-metrics==1.0.2
+    pip install jmeter-metrics==1.0.4
     ```
 
     > Case 2: Using setup.py (clone project and run command within root)
@@ -78,7 +78,7 @@ Creates awesome HTML (dashboard view) report by parsing Jmeter *.jtl or *.csv fi
     ```
 ---
 
-### Exclude Table Results
+#### Exclude Table Results
 
  - From v1.0.2 users can exclude table results in metrics report using --ignoretableresult or -K command
 
@@ -90,7 +90,7 @@ Creates awesome HTML (dashboard view) report by parsing Jmeter *.jtl or *.csv fi
 
 ---
 
-### Multiple csv/jtl support
+#### Multiple csv/jtl support
 
  - From v1.0.2 metrics report support parsing multiple csv/jtl files
 

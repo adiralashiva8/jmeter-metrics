@@ -6,8 +6,10 @@ import pandas as pd
 from bs4 import BeautifulSoup
 from datetime import datetime
 from datetime import timedelta
-from .summary_results import SummaryResults
+from .overview_results import OverviewResults
+from .aggregate_results import AggregateResults
 from .table_results import TableResults
+from .error_results import ErrorResults
 
 
 def generate_report(opts):
@@ -56,9 +58,9 @@ def generate_report(opts):
 
     # jtl file validation part
     try:
-        df[['label', 'success', 'elapsed', 'failureMessage']]
+        df[['label', 'success', 'elapsed', 'failureMessage', 'responseCode', 'threadName']]
     except Exception:
-        exit("Error: Missing one of the column: 'label' or 'success' or 'elapsed' or 'failureMessage' in file")
+        exit("Error: Missing one of the required columns in file")
 
     total_count = df[['success']].count().values
 
@@ -66,7 +68,7 @@ def generate_report(opts):
         exit("Error: File is invalid, Please retry with valid file")
 
     # actual flow
-    logging.info("Converting to .html file. This may take few minutes...")
+    logging.info(" Converting to .html file. This may take few minutes...")
 
     head_content = """
     <!DOCTYPE doctype html>
@@ -194,8 +196,10 @@ def generate_report(opts):
     <div class="sidenav">
         <a> <img class="wrimagecard" src="%s" style="height:20vh;max-width:98%%;"/> </a>
         <a class="tablink" href="#" id="defaultOpen" onclick="openPage('dashboard', this, '#fc6666')"><i class="fa fa-dashboard" style="color:CORNFLOWERBLUE"></i> Dashboard</a>
-        <a class="tablink" href="#" onclick="openPage('suiteMetrics', this, '#fc6666'); executeDataTable('#sm',5)"><i class="fa fa-th-large" style="color:CADETBLUE"></i> Summary Report</a>
-        <a %s class="tablink" href="#" onclick="openPage('testMetrics', this, '#fc6666'); executeDataTable('#tm',3)"><i class="fa fa-list-alt" style="color:PALEVIOLETRED"></i> Table Results</a>
+        <a class="tablink" href="#" onclick="openPage('overviewMetrics', this, '#fc6666'); executeDataTable('#om',3)"><i class="fa fa-info-circle" style="color:STEELBLUE"></i> Overview</a>
+        <a class="tablink" href="#" onclick="openPage('aggregateMetrics', this, '#fc6666'); executeDataTable('#am',2)"><i class="fa fa-th-large" style="color:CADETBLUE"></i> Aggregate Results</a>
+        <a %s class="tablink" href="#" onclick="openPage('testMetrics', this, '#fc6666'); executeDataTable('#tm',3)"><i class="fa fa-th" style="color:CHOCOLATE"></i> Table Results</a>
+        <a class="tablink" href="#" onclick="openPage('errorMetrics', this, '#fc6666'); executeDataTable('#em',0)"><i class="fa fa-exclamation-triangle" style="color:PALEVIOLETRED"></i> Failures</a>
     </div>
     """ % (logo, hide_keyword)
 
@@ -209,7 +213,7 @@ def generate_report(opts):
 
     # dashboard calculations
 
-    logging.info("1 of 3: Capturing dashboard content...")
+    logging.info(" Capturing dashboard content...")
 
     pass_count, fail_count, error_perct = 0, 0, 0
 
@@ -285,9 +289,20 @@ def generate_report(opts):
 		</div>
         <hr/>
         <div class="row rowcard">
+            <div class="col-md-4" style="height:350px;width:auto;">
+                <span style="font-weight:bold;color:gray">Status:</span>
+                <div id="sampleChartID" style="height:280px;width:auto;"></div>
+            </div>
+            <div class="col-md-8" style="height:350px;width:auto;">
+                <span style="font-weight:bold;color:gray">Top 5 Failed Samples:</span>
+                <div id="failureBarID" style="height:300px;width:auto;"></div>
+            </div>
+        </div>
+        <hr/>
+        <div class="row rowcard">
             <div class="col-md-12" style="height:450px;width:auto;">
                 <span style="font-weight:bold;color:gray">Top 10 Sample Avg Performance(ms):</span>
-                <div id="suiteBarID" style="height:400px;width:auto;"></div>
+                <div id="aggBarID" style="height:400px;width:auto;"></div>
             </div>
         </div>
         <div class="row">
@@ -299,9 +314,13 @@ def generate_report(opts):
         </div>
        <script>
             window.onload = function(){
-                executeDataTable('#sm',2);
-                executeDataTable('#tm',1);
-                createBarGraph('#sm',0,2,10,'suiteBarID','Avg Elapsed Time (ms) ','Summary Report');
+                executeDataTable('#om',3);
+                executeDataTable('#am',2);
+                executeDataTable('#tm',2);
+                executeDataTable('#em',0);
+                createPieChart(__PASS__,__FAIL__,'sampleChartID','Status:');
+ 	            createBarGraph('#om',0,3,5,'failureBarID','Number of failures ','Sample');
+                createBarGraph('#am',0,2,10,'aggBarID','Avg Elapsed Time (ms) ','Aggregate Report');
             };
        </script>
     </div>
@@ -317,26 +336,87 @@ def generate_report(opts):
 
     ### ============================ END OF Dashboard ========================================= ####
 
-    ### ============================ START OF Summary Report ======================================= ####
-    logging.info("2 of 3: Capturing summary report details...")
-
+    ### ============================ START OF Overview ======================================= ####
+    logging.info(" Capturing results overview...")
     # Tests div
-    suite_div = soup.new_tag('div')
-    suite_div["id"] = "suiteMetrics"
-    suite_div["class"] = "tabcontent"
-    page_content_div.insert(50, suite_div)
+    ov_div = soup.new_tag('div')
+    ov_div["id"] = "overviewMetrics"
+    ov_div["class"] = "tabcontent"
+    page_content_div.insert(50, ov_div)
 
     test_icon_txt = """
-                    <h4><b><i class="fa fa-table" style="color:CADETBLUE"></i> Summary Report</b></h4>
+                    <h4><b><i class="fa fa-info-circle" style="color:STEELBLUE"></i> Overview</b></h4>
                     <hr></hr>
                     """
-    suite_div.append(BeautifulSoup(test_icon_txt, 'html.parser'))
+    ov_div.append(BeautifulSoup(test_icon_txt, 'html.parser'))
 
     # Create table tag
     table = soup.new_tag('table')
-    table["id"] = "sm"
+    table["id"] = "om"
     table["class"] = "table row-border tablecard"
-    suite_div.insert(10, table)
+    ov_div.insert(10, table)
+
+    thead = soup.new_tag('thead')
+    table.insert(0, thead)
+
+    tr = soup.new_tag('tr')
+    thead.insert(0, tr)
+
+    th = soup.new_tag('th')
+    th.string = "Label"
+    tr.insert(0, th)
+
+    th = soup.new_tag('th')
+    th.string = "Samples"
+    tr.insert(1, th)
+
+    th = soup.new_tag('th')
+    th.string = "Pass"
+    tr.insert(2, th)
+
+    th = soup.new_tag('th')
+    th.string = "Fail"
+    tr.insert(3, th)
+
+    th = soup.new_tag('th')
+    th.string = "Fail%"
+    tr.insert(4, th)
+
+    ov_tbody = soup.new_tag('tbody')
+    table.insert(11, ov_tbody)
+
+    # GET Summary results
+    summary_columns = df[['label', 'elapsed', 'success']]
+    OverviewResults(soup, ov_tbody, summary_columns).generate_overview_results()
+
+    test_icon_txt = """
+    <div class="row">
+        <div class="col-md-12" style="height:25px;width:auto;"></div>
+    </div>
+    """
+    ov_div.append(BeautifulSoup(test_icon_txt, 'html.parser'))
+    ### ============================ END OF Overview ============================================ ####
+
+    ### ============================ START OF Aggregate Report ======================================= ####
+    logging.info(" Capturing aggregate report details...")
+
+    # Tests div
+    agg_div = soup.new_tag('div')
+    agg_div["id"] = "aggregateMetrics"
+    agg_div["class"] = "tabcontent"
+    page_content_div.insert(50, agg_div)
+
+    test_icon_txt = """
+                    <h4><b><i class="fa fa-th-large" style="color:CADETBLUE"></i> Aggregate Report</b></h4>
+                    <hr></hr>
+                    """
+    agg_div.append(BeautifulSoup(test_icon_txt, 'html.parser'))
+
+    # Create table tag
+    table = soup.new_tag('table')
+    table["id"] = "am"
+    table["class"] = "table row-border tablecard"
+    agg_div.insert(10, table)
 
     thead = soup.new_tag('thead')
     table.insert(0, thead)
@@ -357,39 +437,50 @@ def generate_report(opts):
     tr.insert(2, th)
 
     th = soup.new_tag('th')
-    th.string = "Min (ms)"
+    th.string = "90% Line"
     tr.insert(3, th)
 
     th = soup.new_tag('th')
-    th.string = "Max (ms)"
+    th.string = "95% Line"
     tr.insert(4, th)
 
     th = soup.new_tag('th')
-    th.string = "Error %"
+    th.string = "99% Line"
     tr.insert(5, th)
 
     th = soup.new_tag('th')
-    th.string = "Throughput"
+    th.string = "Min (ms)"
     tr.insert(6, th)
+
+    th = soup.new_tag('th')
+    th.string = "Max (ms)"
+    tr.insert(7, th)
+
+    th = soup.new_tag('th')
+    th.string = "Throughput"
+    tr.insert(8, th)
+
+    th = soup.new_tag('th')
+    th.string = "Error %"
+    tr.insert(9, th)
 
     suite_tbody = soup.new_tag('tbody')
     table.insert(11, suite_tbody)
 
     # GET Summary results
     summary_columns = df[['label', 'elapsed', 'success']]
-    SummaryResults(soup, suite_tbody, summary_columns).generate_summary_results()
+    AggregateResults(soup, suite_tbody, summary_columns).generate_aggregate_results()
 
     test_icon_txt = """
     <div class="row">
         <div class="col-md-12" style="height:25px;width:auto;"></div>
     </div>
     """
-    suite_div.append(BeautifulSoup(test_icon_txt, 'html.parser'))
-
-    ### ============================ END OF Summary Report ============================================ ####
+    agg_div.append(BeautifulSoup(test_icon_txt, 'html.parser'))
+    ### ============================ END OF Aggregate Report ============================================ ####
 
     ### ============================ START OF Table Results ======================================= ####
-    logging.info("3 of 3: Capturing table results details...")
+    logging.info(" Capturing table results details...")
 
     # Tests div
     tm_div = soup.new_tag('div')
@@ -398,7 +489,7 @@ def generate_report(opts):
     page_content_div.insert(100, tm_div)
 
     test_icon_txt = """
-    <h4><b><i class="fa fa-table" style="color:PALEVIOLETRED"></i> Table Results</b></h4>
+    <h4><b><i class="fa fa-th" style="color:CHOCOLATE"></i> Table Results</b></h4>
     <hr></hr>
     """
     tm_div.append(BeautifulSoup(test_icon_txt, 'html.parser'))
@@ -420,16 +511,20 @@ def generate_report(opts):
     tr.insert(0, th)
 
     th = soup.new_tag('th')
-    th.string = "Status"
+    th.string = "Response Code"
     tr.insert(1, th)
 
     th = soup.new_tag('th')
-    th.string = "Elapsed Time (ms)"
+    th.string = "Result"
     tr.insert(2, th)
 
     th = soup.new_tag('th')
-    th.string = "Error Message"
+    th.string = "Elapsed Time (ms)"
     tr.insert(3, th)
+
+    th = soup.new_tag('th')
+    th.string = "Thread Group"
+    tr.insert(4, th)
 
     test_tbody = soup.new_tag('tbody')
     table.insert(11, test_tbody)
@@ -438,7 +533,7 @@ def generate_report(opts):
     if opts.ignoretableresult == "True":
         pass
     else:
-        table_columns = df[['label', 'success', 'elapsed', 'failureMessage']]
+        table_columns = df[['label', 'responseCode', 'success', 'elapsed', 'threadName']]
         TableResults(soup, test_tbody, table_columns).generate_table_results()
 
     test_icon_txt = """
@@ -450,8 +545,84 @@ def generate_report(opts):
 
     ### ============================ END OF Table Results ============================================ ####
 
+    ### ============================ START OF Error Results ======================================= ####
+    logging.info(" Capturing failure details...")
+
+    # Tests div
+    tm_div = soup.new_tag('div')
+    tm_div["id"] = "errorMetrics"
+    tm_div["class"] = "tabcontent"
+    page_content_div.insert(100, tm_div)
+
+    test_icon_txt = """
+    <h4><b><i class="fa fa-exclamation-triangle" style="color:PALEVIOLETRED"></i> Failures</b></h4>
+    <hr></hr>
+    """
+    tm_div.append(BeautifulSoup(test_icon_txt, 'html.parser'))
+
+    # Create table tag
+    table = soup.new_tag('table')
+    table["id"] = "em"
+    table["class"] = "table row-border tablecard"
+    tm_div.insert(10, table)
+
+    thead = soup.new_tag('thead')
+    table.insert(0, thead)
+
+    tr = soup.new_tag('tr')
+    thead.insert(0, tr)
+
+    th = soup.new_tag('th')
+    th.string = "Label"
+    tr.insert(0, th)
+
+    th = soup.new_tag('th')
+    th.string = "Error Message"
+    tr.insert(1, th)
+
+    th = soup.new_tag('th')
+    th.string = "Assertion Message"
+    tr.insert(2, th)
+
+    th = soup.new_tag('th')
+    th.string = "Thread Group"
+    tr.insert(3, th)
+
+    test_tbody = soup.new_tag('tbody')
+    table.insert(11, test_tbody)
+
+    # GET Error METRICS
+    table_columns = df[['label', 'responseMessage', 'failureMessage', 'threadName', 'success']]
+    ErrorResults(soup, test_tbody, table_columns).generate_error_results()
+
+    test_icon_txt = """
+    <div class="row">
+        <div class="col-md-12" style="height:25px;width:auto;"></div>
+    </div>
+    """
+    tm_div.append(BeautifulSoup(test_icon_txt, 'html.parser'))
+
+    ### ============================ END OF Error Results ============================================ ####
+
     # END OF LOGS
     script_text = """
+        <script>
+            function createPieChart(passed_count,failed_count,ChartID,ChartName){
+                var status = [];
+                status.push(['Status', 'Percentage']);
+                status.push(['PASS',parseInt(passed_count)],['FAIL',parseInt(failed_count)]);
+                var data = google.visualization.arrayToDataTable(status);
+
+                var options = {
+                pieHole: 0.6,
+                legend: 'none',
+                chartArea: {width: "95%",height: "90%"},
+                colors: ['#2ecc71', '#fc6666'],
+                };
+
+                var chart = new google.visualization.PieChart(document.getElementById(ChartID));
+                chart.draw(data, options);
+            }
         </script>
         <script>
            function createBarGraph(tableID,keyword_column,time_column,limit,ChartID,Label,type){
@@ -528,11 +699,17 @@ def generate_report(opts):
       function executeDataTable(tabname,sortCol) {
         var fileTitle;
         switch(tabname) {
-            case "#sm":
-                fileTitle = "SummaryReport";
+            case "#om":
+                fileTitle = "Overview";
+                break;
+            case "#am":
+                fileTitle =  "AggregateReport";
                 break;
             case "#tm":
                 fileTitle =  "TableReport";
+                break;
+            case "#em":
+                fileTitle =  "Failures";
                 break;
             default:
                 fileTitle =  "metrics";
@@ -641,4 +818,4 @@ def generate_report(opts):
     with open(result_file, 'w') as outfile:
         outfile.write(soup.prettify())
 
-    logging.info("Results file created successfully and can be found at {}".format(result_file))
+    logging.info(" Results file created successfully and can be found at {}".format(result_file))
