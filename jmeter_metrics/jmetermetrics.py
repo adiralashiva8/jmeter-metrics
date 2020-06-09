@@ -49,7 +49,7 @@ def generate_report(opts):
     result_file = os.path.join(path, result_file_name)
 
     # Read result.jtl file
-    df_from_each_file = (pd.read_csv(f) for f in output_names)
+    df_from_each_file = (pd.read_csv(f, sep=opts.seperator) for f in output_names)
     df = pd.concat(df_from_each_file, ignore_index=True)
 
     pd.set_option('display.max_rows', None)

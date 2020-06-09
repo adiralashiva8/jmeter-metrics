@@ -33,7 +33,7 @@ Creates awesome HTML (dashboard view) report by parsing Jmeter *.jtl or *.csv fi
 
     > Case 1: Using pip
     ```
-    pip install jmeter-metrics==1.0.4
+    pip install jmeter-metrics==1.0.5
     ```
 
     > Case 2: Using setup.py (clone project and run command within root)
@@ -96,6 +96,15 @@ Creates awesome HTML (dashboard view) report by parsing Jmeter *.jtl or *.csv fi
 
     ```
     jmetermetrics -0 "result.jtl,result1.csv,result2.jtl,result3.csv"
+    ```
+---
+
+#### Custom Seperator in CSV/JTL file (delimiter)
+
+ - From v1.0.5 metrics report support parsing csv/jtl file having custom delimiter (ex: | or __)
+
+    ```
+    jmetermetrics -S "|"
     ```
 ---
 

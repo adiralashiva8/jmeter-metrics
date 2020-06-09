@@ -48,6 +48,13 @@ def parse_options():
         help="Ignore table report in metrics report"
     )
 
+    general.add_argument(
+        '-S', '--seperator',
+        dest='seperator',
+        default=",",
+        help="Seperator of columns"
+    )
+
     args = parser.parse_args()
     return args
 
