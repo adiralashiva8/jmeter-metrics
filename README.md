@@ -33,7 +33,7 @@ Creates awesome HTML (dashboard view) report by parsing Jmeter *.jtl or *.csv fi
 
     > Case 1: Using pip
     ```
-    pip install jmeter-metrics==1.0.5
+    pip install jmeter-metrics==1.0.6
     ```
 
     > Case 2: Using setup.py (clone project and run command within root)
