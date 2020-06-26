@@ -223,7 +223,10 @@ def generate_report(opts):
         else:
             fail_count = fail_count + 1
 
-    error_perct = float(fail_count) / float(total_count) * 100
+    try:
+        error_perct = float(fail_count) / float(total_count) * 100
+    except ZeroDivisionError:
+        error_perct = 0
     error_perct = round(error_perct, 2)
 
     dashboard_content = """

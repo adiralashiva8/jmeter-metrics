@@ -49,7 +49,10 @@ def error_count(x):
             count += 1
 
     if count != 0:
-        result = float(count)/len(x) * 100
+        try:
+            result = float(count)/len(x) * 100
+        except ZeroDivisionError:
+            result = 0
 
     return str(round(result,2))
 

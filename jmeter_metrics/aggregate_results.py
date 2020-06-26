@@ -69,13 +69,24 @@ def error_count(x):
             count += 1
 
     if count != 0:
-        result = float(count)/len(x) * 100
+        try:
+            result = float(count)/len(x) * 100
+        except ZeroDivisionError:
+            result = 0
 
     return str(round(result,2))
 
 def throughput(x):
     avg = sum(x) / len(x)
-    result = 1 / avg * 1000
+    try:
+        avg = sum(x) / len(x)
+    except ZeroDivisionError:
+        avg = 0
+
+    try:
+        result = 1 / avg * 1000
+    except ZeroDivisionError:
+        result = 0
     return result
 
 def q90(x):
